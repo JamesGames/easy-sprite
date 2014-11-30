@@ -13,7 +13,7 @@ To use Easy Sprite in your Maven managed project use the
 following dependency definition:
 
     <dependency>
-        <groupId>com.github.JamesJamesJames</groupId>
+        <groupId>org.jamesgames</groupId>
         <artifactId>easy=sprite</artifactId>
     </dependency>
 
