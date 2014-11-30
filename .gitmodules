@@ -1,0 +1,3 @@
+[submodule "build-dependencies/james-java-utils"]
+	path = build-dependencies/james-java-utils
+	url = https://github.com/jamesjamesjames/james-java-utils

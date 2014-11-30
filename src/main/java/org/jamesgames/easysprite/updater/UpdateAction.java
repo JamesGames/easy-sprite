@@ -1,0 +1,11 @@
+package org.jamesgames.easysprite.updater;
+
+/**
+ * UpdateAction is an interface that defines one method that can be used to describe something that should be done
+ * during an update done by {@link org.jamesgames.easysprite.updater.SpriteUpdater}
+ *
+ * @author James Murphy
+ */
+public interface UpdateAction {
+    public void updateAction(long elapsedTimeInMilliseconds);
+}

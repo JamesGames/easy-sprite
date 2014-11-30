@@ -8,7 +8,7 @@
     <groupId>org.jamesgames</groupId>
     <artifactId>easy-sprite</artifactId>
     <version>1.0</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <name>Easy Sprite</name>
     <description>Sprite library that provides classes that can represent moving pieces of animations that can help create video games or other graphical applications.</description>
