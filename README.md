@@ -14,7 +14,7 @@ following dependency definition:
 
     <dependency>
         <groupId>org.jamesgames</groupId>
-        <artifactId>easy=sprite</artifactId>
+        <artifactId>easy-sprite</artifactId>
     </dependency>
 
 The source code isn't hosted on any maven repo, so in the meantime you'll have to download this project from here on Github and build it with maven to have it exist on your machine's local maven repository (easy to do if you build it via your projects maven build where this project is a git submodule of your own project).
