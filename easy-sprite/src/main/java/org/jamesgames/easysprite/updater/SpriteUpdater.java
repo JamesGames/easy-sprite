@@ -1,7 +1,7 @@
 package org.jamesgames.easysprite.updater;
 
 import net.jcip.annotations.ThreadSafe;
-import org.jamesgames.easysprite.Sprite;
+import org.jamesgames.easysprite.sprite.Sprite;
 import org.jamesgames.jamesjavautils.time.ActionsPerTimeFrameCounter;
 
 import java.util.HashSet;
@@ -10,19 +10,20 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * SpriteUpdater updates a {@link org.jamesgames.easysprite.Sprite} at a specific rate on a separate thread, supplying
- * how much time has been elapsed since the last update from the SpriteUpdater. SpriteUpdater can also execute
- * UpdateActions during each update to update any other pieces of data that the user wants updated per action.
- * SpriteUpdater updates in fixed-rate execution, where each execution is scheduled relative to the scheduled execution
- * time of the initial execution.  If an execution is delayed for any reason (such as garbage collection or other
- * background activity), two or more executions will occur in rapid succession to "catch up."  In the long run, the
- * frequency of execution will be exactly the reciprocal of the specified period (assuming the system clock underlying
- * Object.wait(long) is accurate). (comments partly taken from java.util.Timer spec).
+ * SpriteUpdater updates a {@link Sprite} at a specific rate on a separate thread, supplying how much time has been
+ * elapsed since the last update from the SpriteUpdater. SpriteUpdater can also execute {@link UpdateAction}s during
+ * each update to update any other pieces of data that the user wants updated per action (a good example UpdateAction
+ * would be a to repaint the graphics of an application). SpriteUpdater updates in fixed-rate execution, where each
+ * execution is scheduled relative to the scheduled execution time of the initial execution.  If an execution is delayed
+ * for any reason (such as garbage collection or other background activity), two or more executions will occur in rapid
+ * succession to "catch up."  In the long run, the frequency of execution will be exactly the reciprocal of the
+ * specified period (assuming the system clock underlying Object.wait(long) is accurate). (comments partly taken from
+ * java.util.Timer spec).
  *
  * @author James Murphy
  */
 @ThreadSafe
-public class SpriteUpdater {
+public final class SpriteUpdater {
 
     /**
      * The amount in nano seconds of how long the updates per second value will be calculated for every new value
@@ -36,6 +37,8 @@ public class SpriteUpdater {
     private static final int amountOfActionsPerGameUpdate = 1;
 
     private static final int numberOfNanosecondsInMillisecond = 1_000_000;
+
+    private static final String spriteUpdaterThreadName = "Sprite Updater Thread";
 
 
     /**
@@ -52,7 +55,7 @@ public class SpriteUpdater {
     /**
      * Timer used to execute the TimerTask used to update
      */
-    private final Timer updateTimer = new Timer();
+    private final Timer updateTimer = new Timer(spriteUpdaterThreadName);
 
     /**
      * References the most recently created TimerTask to update the Sprite and execute other additional update actions
@@ -73,12 +76,12 @@ public class SpriteUpdater {
      * Set of additional actions to do during each update. Example usage could be to tell some other piece of software
      * to make another render, or to log some data
      */
-    private Set<UpdateAction> additionalActionsPerUpdate = new HashSet<>();
+    private final Set<UpdateAction> additionalActionsPerUpdate = new HashSet<>();
 
     /**
      * Set of update listeners listening for things such as new calculated updates per second values
      */
-    private Set<UpdateListener> updateListeners = new HashSet<>();
+    private final Set<UpdateListener> updateListeners = new HashSet<>();
 
     /**
      * Last known computed updates per second value, used to know if the value changed, that way if it did all listeners
@@ -165,7 +168,7 @@ public class SpriteUpdater {
     private void updateData() {
         long elapsedTimeInNanoseconds = System.nanoTime() - systemNanoTimeFromLastUpdate;
 
-        systemNanoTimeFromLastUpdate = systemNanoTimeFromLastUpdate + elapsedTimeInNanoseconds;
+        systemNanoTimeFromLastUpdate += elapsedTimeInNanoseconds;
 
         long elapsedTimeInMilliseconds = elapsedTimeInNanoseconds / numberOfNanosecondsInMillisecond;
 

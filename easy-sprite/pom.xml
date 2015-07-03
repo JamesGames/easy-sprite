@@ -11,7 +11,7 @@
     <packaging>jar</packaging>
 
     <name>Easy Sprite</name>
-    <description>Sprite library that provides classes that can represent moving pieces of animations that can help create video games or other graphical applications.</description>
+    <description>Easy Sprite is a graphics and animation library that provides classes that can represent moving pieces of animations that can help create video games or other graphical applications.</description>
 
     <developers>
         <developer>
@@ -39,7 +39,7 @@
         <dependency>
             <groupId>org.jamesgames</groupId>
             <artifactId>james-java-utils</artifactId>
-            <version>1.0</version>
+            <version>1.1</version>
         </dependency>
         <dependency>
             <groupId>net.jcip</groupId>
@@ -47,6 +47,7 @@
             <version>1.0</version>
         </dependency>
     </dependencies>
+
 
 
 

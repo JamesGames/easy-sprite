@@ -7,5 +7,5 @@ package org.jamesgames.easysprite.updater;
  * @author James Murphy
  */
 public interface UpdateListener {
-    public void newUpdatePerSecondCalculated(float updatesPerSecond);
+    void newUpdatePerSecondCalculated(float updatesPerSecond);
 }

@@ -1,13 +1,13 @@
-package org.jamesgames.easysprite;
+package org.jamesgames.easysprite.sprite;
 
 import net.jcip.annotations.ThreadSafe;
-import org.jamesgames.easysprite.physics.SimpleCollisionDirection;
-import org.jamesgames.easysprite.physics.SimpleShapeCollisionDetection;
+import org.jamesgames.easysprite.physics.partitioning.NullSpacePartitioner;
+import org.jamesgames.easysprite.physics.partitioning.SpacePartitioner;
+import org.jamesgames.easysprite.physics.simple.SimpleCollisionDirection;
+import org.jamesgames.easysprite.physics.simple.SimpleShapeCollisionDetection;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -26,17 +26,23 @@ import java.util.List;
  */
 @ThreadSafe
 public class Sprite implements Iterable<Sprite> {
-    private final static Sprite endRootSprite = new EndRootSprite(0, 0);
+    private static final Sprite endRootSprite = new EndRootSprite();
+    private static final Random randomGen = new Random();
 
     private final List<Sprite> childSprites = new ArrayList<>();
     private Sprite parentSprite = endRootSprite;
     private float xCoordinateTopLeft = 0;
     private float yCoordinateTopLeft = 0;
+    private float oldXCoordinateTopLeft = xCoordinateTopLeft;
+    private float oldYCoordinateTopLeft = yCoordinateTopLeft;
     private float xVelocity = 0;
     private float yVelocity = 0;
+    private float oldXVelocity = xVelocity;
+    private float oldYVelocity = yVelocity;
     private int width = 0;
     private int height = 0;
     private boolean drawingDebugGraphics = false;
+    private SpacePartitioner spacePartitioner = new NullSpacePartitioner();
 
     public Sprite() {
         this(0, 0);
@@ -52,25 +58,63 @@ public class Sprite implements Iterable<Sprite> {
         return childSprites.iterator();
     }
 
+    public final synchronized float getOldXCoordinateTopLeft() {
+        return oldXCoordinateTopLeft;
+    }
+
+    public final synchronized int getOldXDrawingCoordinateTopLeft() {
+        return getParentOldXDrawingCoordinateTopLeftInternalImpl() + getRoundedOldXCoordinateTopLeft();
+    }
+
+    public final synchronized int getRoundedOldXCoordinateTopLeft() {
+        return Math.round(oldXCoordinateTopLeft);
+    }
+
+    int getParentOldXDrawingCoordinateTopLeftInternalImpl() {
+        return parentSprite.getOldXDrawingCoordinateTopLeft();
+    }
+
+    public final synchronized float getOldYCoordinateTopLeft() {
+        return oldYCoordinateTopLeft;
+    }
+
+    public final synchronized int getOldYDrawingCoordinateTopLeft() {
+        return getParentOldYDrawingCoordinateTopLeftInternalImpl() + getRoundedOldYCoordinateTopLeft();
+    }
+
+    public final synchronized int getRoundedOldYCoordinateTopLeft() {
+        return Math.round(oldYCoordinateTopLeft);
+    }
+
+    int getParentOldYDrawingCoordinateTopLeftInternalImpl() {
+        return parentSprite.getOldYDrawingCoordinateTopLeft();
+    }
+
     /**
      * @return x coordinate location
      */
-    public synchronized final float getXCoordinateTopLeft() {
+    public final synchronized float getXCoordinateTopLeft() {
         return xCoordinateTopLeft;
     }
 
+    /**
+     * Set x coordinate location
+     */
+    public final synchronized void setXCoordinateTopLeft(float xCoordinateTopLeft) {
+        this.xCoordinateTopLeft = xCoordinateTopLeft;
+    }
 
     /**
      * @return x coordinate units rounded to nearest integer for drawing purposes
      */
-    public synchronized final int getXDrawingCoordinateTopLeft() {
+    public final synchronized int getXDrawingCoordinateTopLeft() {
         return getParentXDrawingCoordinateTopLeftInternalImpl() + getRoundedXCoordinateTopLeft();
     }
 
     /**
      * @return x coordinate location rounded
      */
-    public synchronized final int getRoundedXCoordinateTopLeft() {
+    public final synchronized int getRoundedXCoordinateTopLeft() {
         return Math.round(xCoordinateTopLeft);
     }
 
@@ -83,24 +127,23 @@ public class Sprite implements Iterable<Sprite> {
     }
 
     /**
-     * Set x coordinate location
-     */
-    public synchronized final void setXCoordinateTopLeft(float xCoordinateTopLeft) {
-        this.xCoordinateTopLeft = xCoordinateTopLeft;
-    }
-
-
-    /**
      * @return y coordinate location
      */
-    public synchronized final float getYCoordinateTopLeft() {
+    public final synchronized float getYCoordinateTopLeft() {
         return yCoordinateTopLeft;
+    }
+
+    /**
+     * Set y coordinate location
+     */
+    public final synchronized void setYCoordinateTopLeft(float yCoordinateTopLeft) {
+        this.yCoordinateTopLeft = yCoordinateTopLeft;
     }
 
     /**
      * @return y coordinate units rounded to nearest integer for drawing purposes
      */
-    public synchronized final int getYDrawingCoordinateTopLeft() {
+    public final synchronized int getYDrawingCoordinateTopLeft() {
         return getParentYDrawingCoordinateTopLeftInternalImpl() + getRoundedYCoordinateTopLeft();
     }
 
@@ -119,73 +162,74 @@ public class Sprite implements Iterable<Sprite> {
         return parentSprite.getYDrawingCoordinateTopLeft();
     }
 
-    /**
-     * Set y coordinate location
-     */
-    public synchronized final void setYCoordinateTopLeft(float yCoordinateTopLeft) {
-        this.yCoordinateTopLeft = yCoordinateTopLeft;
+    public final synchronized float getOldXVelocity() {
+        return oldXVelocity;
     }
 
     /**
      * @return xVelocity in coordinate units per millisecond
      */
-    public synchronized final float getXVelocity() {
+    public final synchronized float getXVelocity() {
         return xVelocity;
     }
 
     /**
      * Set xVelocity in coordinate units per millisecond
      */
-    public synchronized final void setXVelocity(float xVelocity) {
+    public final synchronized void setXVelocity(float xVelocity) {
         this.xVelocity = xVelocity;
+    }
+
+    public final synchronized float getOldYVelocity() {
+        return oldYVelocity;
     }
 
     /**
      * @return yVelocity in coordinate units per millisecond
      */
-    public synchronized final float getYVelocity() {
+    public final synchronized float getYVelocity() {
         return yVelocity;
     }
 
     /**
      * Set yVelocity in coordinate units per millisecond
      */
-    public synchronized final void setYVelocity(float yVelocity) {
+    public final synchronized void setYVelocity(float yVelocity) {
         this.yVelocity = yVelocity;
     }
 
     /**
      * @return width of the sprite
      */
-    public synchronized final int getWidth() {
+    public final synchronized int getWidth() {
         return width;
     }
 
     /**
      * Set the width of the sprite
      */
-    public synchronized final void setWidth(int width) {
+    public final synchronized void setWidth(int width) {
         this.width = width;
     }
 
     /**
      * @return height of the sprite
      */
-    public synchronized final int getHeight() {
+    public final synchronized int getHeight() {
         return height;
     }
 
     /**
      * Set the height of the sprite
      */
-    public synchronized final void setHeight(int height) {
+    public final synchronized void setHeight(int height) {
         this.height = height;
     }
 
     /**
      * Sets the height and width of the sprite
      */
-    public synchronized final void resize(int newWidth, int newHeight) {
+    public final synchronized void resize(int newWidth, int newHeight) {
         int oldWidth = width;
         int oldHeight = height;
         setWidth(newWidth);
@@ -205,27 +249,32 @@ public class Sprite implements Iterable<Sprite> {
     /**
      * Adds a child sprite to this sprite
      */
-    public synchronized final void addChildSprite(Sprite sprite) {
+    public final synchronized void addChildSprite(Sprite sprite) {
         if (childSprites.contains(sprite)) {
             throw new IllegalArgumentException("Child sprite already exists in this parent sprite");
         }
         childSprites.add(sprite);
+        // Also add to the partitioner
+        spacePartitioner.addSprite(sprite);
         sprite.setParentSprite(this);
     }
 
     private void setParentSprite(Sprite newParentSprite) {
-        this.parentSprite = newParentSprite;
+        parentSprite = newParentSprite;
     }
 
     /**
      * Removes a child sprite from this sprite.
      */
-    public synchronized final void removeChildSprite(Sprite sprite) {
+    public final synchronized void removeChildSprite(Sprite sprite) {
         boolean spriteExistedInCollection = childSprites.remove(sprite);
 
         if (!spriteExistedInCollection) {
             throw new IllegalArgumentException("Child sprite did not already exist in this parent sprite");
         }
+
+        // Also remove from the partitioner
+        spacePartitioner.removeSprite(sprite);
 
         // Do this after we throw the exception, so we don't ruin state on a Sprite accidentally.
         sprite.setParentSprite(endRootSprite);
@@ -235,10 +284,10 @@ public class Sprite implements Iterable<Sprite> {
      * Removes child sprites in the passed collection from this sprite, at least one Sprite passed should exist in this
      * Sprite. If no sprites are passed, the method does nothing.
      */
-    public synchronized final void removeChildSprites(Collection<Sprite> sprites) {
+    public final synchronized void removeChildSprites(Collection<Sprite> sprites) {
         boolean atLeastOneOfTheSpritesExistedInCollection = childSprites.removeAll(sprites);
 
-        if (sprites.size() > 0 && !atLeastOneOfTheSpritesExistedInCollection) {
+        if (!sprites.isEmpty() && !atLeastOneOfTheSpritesExistedInCollection) {
             throw new IllegalArgumentException("None of the child sprites exist in this parent sprite");
         }
 
@@ -261,7 +310,7 @@ public class Sprite implements Iterable<Sprite> {
      * @param elapsedTimeInMilliseconds
      *         Time elapsed since last updateBeforeChildren
      */
-    public synchronized final void updateAll(long elapsedTimeInMilliseconds) {
+    public final synchronized void updateAll(long elapsedTimeInMilliseconds) {
         // Update the position first, so that the extensions to this updateBeforeChildren may work on the latest possible Sprite
         // position
         setXCoordinateTopLeft(getXCoordinateTopLeft() + (getXVelocity() * elapsedTimeInMilliseconds));
@@ -269,28 +318,90 @@ public class Sprite implements Iterable<Sprite> {
 
         updateBeforeChildren(elapsedTimeInMilliseconds);
 
-        // updateBeforeChildren all the child sprites too
+        // update all the child sprites too
         for (Sprite childSprite : childSprites) {
             childSprite.updateAll(elapsedTimeInMilliseconds);
+            updateChildSpritePartitionerPosition(childSprite);
         }
 
         updateAfterChildren(elapsedTimeInMilliseconds);
+
+        // Updating of old values must occur after they were updated in this update, and before handling collisions
+        updateOldCoordinatePositions();
+        updateOldVelocityPositions();
+
+        handlePotentialChildSpriteCollisions();
     }
 
     /**
      * Updates the Sprite before the child Sprites are updated. The idea is that this is a method that is overridden by
-     * Sprite subclasses, while the updateAll method is not, in order to recursively update all child sprites after
-     * updating the parent sprites first.
+     * Sprite subclasses, while the updateAll method is not.
      */
     protected synchronized void updateBeforeChildren(long elapsedTimeInMilliseconds) {
     }
 
     /**
      * Updates the Sprite after the child Sprites are updated. The idea is that this is a method that is overridden by
-     * Sprite subclasses, while the updateAll method is not, in order to recursively update all child sprites after
-     * updating the parent sprites first.
+     * Sprite subclasses, while the updateAll method is not.
      */
     protected synchronized void updateAfterChildren(long elapsedTimeInMilliseconds) {
+    }
+
+    private void updateChildSpritePartitionerPosition(Sprite childSprite) {
+        if (childSprite.positionChangedDuringUpdate()) {
+            spacePartitioner.updatePosition(childSprite);
+        }
+    }
+
+    private boolean positionChangedDuringUpdate() {
+        return oldXCoordinateTopLeft != xCoordinateTopLeft ||
+                oldYCoordinateTopLeft != yCoordinateTopLeft;
+    }
+
+    private void updateOldCoordinatePositions() {
+        oldXCoordinateTopLeft = xCoordinateTopLeft;
+        oldYCoordinateTopLeft = yCoordinateTopLeft;
+    }
+
+    private void updateOldVelocityPositions() {
+        oldXVelocity = xVelocity;
+        oldYVelocity = yVelocity;
+    }
+
+    private void handlePotentialChildSpriteCollisions() {
+        for (Sprite childSprite : childSprites) {
+            spacePartitioner.applyActionWithAllPotentialCollidingSprites(childSprite,
+                    spriteCollidingWithChild -> {
+                        if (childSprite != spriteCollidingWithChild)
+                            childSprite.determineIfCollisionOccurredAndHandle(spriteCollidingWithChild);
+                    });
+        }
+    }
+
+    private void determineIfCollisionOccurredAndHandle(Sprite potentialCollidingSprite) {
+        SimpleCollisionDirection collision = potentialCollision(potentialCollidingSprite);
+        if (collision != SimpleCollisionDirection.no_collision) {
+            handleCollision(potentialCollidingSprite, collision);
+        }
+    }
+
+    /**
+     * Determines if this Sprite believes it collided with the potential colliding sprite which assumes both Sprites are
+     * square shaped. The method is designed to be possibly overridden by Sprite subclasses, so each unique Sprite
+     * subclass can define if their Sprite collides with another Sprite. The result of this method is used to determine
+     * if a call to {@link Sprite#handleCollision(Sprite, SimpleCollisionDirection)} is made or not.
+     */
+    protected synchronized SimpleCollisionDirection potentialCollision(Sprite potentialCollidingSprite) {
+        return collidesWithPositionsAsOfLastUpdate(potentialCollidingSprite);
+    }
+
+
+    /**
+     * Handles the collision between this Sprite and another. The idea is that this method can be overridden by Sprite
+     * subclasses to be notified when a collision occurs, and also be overloaded to have separate methods for different
+     * Sprite collisions.
+     */
+    protected synchronized void handleCollision(Sprite collidingSprite, SimpleCollisionDirection direction) {
     }
 
 
@@ -298,12 +409,12 @@ public class Sprite implements Iterable<Sprite> {
      * Draws the Sprite, and then draws all of it's child sprites. The idea is that this is the method that gets called
      * whenever the Sprite needs to be rendered to a graphics object.
      */
-    public synchronized final void drawAll(Graphics2D g) {
+    public final synchronized void drawAll(Graphics2D g) {
         // draw the graphics that need to appear under the child sprite graphics
-        this.drawUnderChildren(g);
+        drawUnderChildren(g);
         // draw the debug graphics too if needed
         if (drawingDebugGraphics) {
-            this.debugDraw(g);
+            debugDraw(g);
         }
 
         // Draw all the child sprites too
@@ -314,9 +425,7 @@ public class Sprite implements Iterable<Sprite> {
         }
 
         // now draw all the graphics that need to appear over the child sprite graphics
-        this.drawOverChildren(g);
-
-        //setIsInNeedOfRepaint(false);
+        drawOverChildren(g);
     }
 
     /**
@@ -345,7 +454,7 @@ public class Sprite implements Iterable<Sprite> {
     /**
      * Sets whether or not the Sprite should draw debug graphics and information
      */
-    public synchronized final void setDrawingDebugGraphics(boolean drawingDebugGraphics) {
+    public final synchronized void setDrawingDebugGraphics(boolean drawingDebugGraphics) {
         this.drawingDebugGraphics = drawingDebugGraphics;
         setDrawingDebugGraphicsToCachedSprites(drawingDebugGraphics);
     }
@@ -362,7 +471,7 @@ public class Sprite implements Iterable<Sprite> {
     /**
      * Sets whether or not the Sprite and all of it's child Sprites' should draw debug graphics and information
      */
-    public synchronized final void setDrawingDebugGraphicsIncludingChildSprites(boolean drawingDebugGraphics) {
+    public final synchronized void setDrawingDebugGraphicsIncludingChildSprites(boolean drawingDebugGraphics) {
         setDrawingDebugGraphics(drawingDebugGraphics);
         for (Sprite s : this) {
             s.setDrawingDebugGraphicsIncludingChildSprites(drawingDebugGraphics);
@@ -376,53 +485,107 @@ public class Sprite implements Iterable<Sprite> {
      * this Sprite to then draw debug graphics, as well as having A to continue drawing debugs and B to start drawing
      * debug graphics.
      */
-    public synchronized final void toggleDrawingDebugGraphicsIncludingChildSprites() {
+    public final synchronized void toggleDrawingDebugGraphicsIncludingChildSprites() {
         setDrawingDebugGraphicsIncludingChildSprites(!drawingDebugGraphics);
     }
 
     /**
-     * Determines if this sprite collides with another, assumes sprites are rectangle shaped. Designed to be overridden
-     * by subclasses to handle more complex collisions
+     * Determines if this sprite collides with another Sprite based on positions of the two Sprite objects at the end of
+     * the last update, assumes sprites are rectangle shaped. Designed to be overridden by subclasses to handle more
+     * complex collisions
      */
-    public synchronized final SimpleCollisionDirection collides(Sprite otherShape) {
+    synchronized SimpleCollisionDirection collidesWithPositionsAsOfLastUpdate(Sprite otherShape) {
         return SimpleShapeCollisionDetection.detectCollisionOfTwoRectangles(
                 // This rect
-                this.getXDrawingCoordinateTopLeft(), this.getYDrawingCoordinateTopLeft(), this.getWidth(),
-                this.getHeight(),
+                getOldXDrawingCoordinateTopLeft(), getOldYDrawingCoordinateTopLeft(), getWidth(),
+                getHeight(),
                 // Other shape rect
-                otherShape.getXDrawingCoordinateTopLeft(), otherShape.getYDrawingCoordinateTopLeft(),
+                otherShape.getOldXDrawingCoordinateTopLeft(), otherShape.getOldYDrawingCoordinateTopLeft(),
                 otherShape.getWidth(), otherShape.getHeight());
     }
+
 
     /**
      * @return The number of child sprites in this parent sprite
      */
-    public synchronized final int getChildSpriteCount() {
-        if (this.childSprites.size() == 1 && this.childSprites.get(0) instanceof EndRootSprite) {
-            return 0;
-        } else {
-            return this.childSprites.size();
-        }
+    public final synchronized int getChildSpriteCount() {
+        return childSprites.size();
     }
 
 
     /**
      * Determines if this sprite is visible within it's parent sprite's boundaries
      */
-    public final boolean isVisibleOnParentSprite() {
-        return collides(parentSprite) != SimpleCollisionDirection.no_collision;
+    public final synchronized boolean isVisibleOnParentSprite() {
+        return collidesWithPositionsAsOfLastUpdate(parentSprite) != SimpleCollisionDirection.no_collision;
+    }
+
+    /**
+     * Reverses velocities to stay on parent sprite, assumes the Sprite is moving in the direction to be off of the
+     * parent Sprite if found to exceed the boundaries of the parent sprite (so it simply does a dumb reversal of x or y
+     * velocities if found on left/right or top/bottom borders.
+     */
+    public final synchronized void repositionAndReverseVelocitiesIfVeeringOffParent() {
+        if (oldXCoordinateTopLeft < 0) {
+            setXVelocity(-getOldXVelocity());
+            setXCoordinateTopLeft(0);
+        } else if (oldXCoordinateTopLeft + width > parentSprite.getWidth()) {
+            setXVelocity(-getOldXVelocity());
+            setXCoordinateTopLeft(parentSprite.getWidth() - width);
+        }
+
+        if (oldYCoordinateTopLeft < 0) {
+            setYVelocity(-getOldYVelocity());
+            setYCoordinateTopLeft(0);
+        } else if (oldYCoordinateTopLeft + height > parentSprite.getHeight()) {
+            setYVelocity(-getOldYVelocity());
+            setYCoordinateTopLeft(parentSprite.getHeight() - height);
+        }
+    }
+
+    /**
+     * Randomly sets the x and y velocity of the Sprite up to positive or negative maxVelocity, but not between pos/neg
+     * maxVelocity that is some percent of maxVelocity near 0. So for inputs of 10.0f, and 0.50f, the velocity will
+     * randomly be set uniformly between -10.0 and -5.0, and 5.0 and 10.0.
+     *
+     * @param maxVelocity
+     *         Top speed allowed
+     * @param percentFromZeroToExtremeToNotSetTo
+     *         Percentage of the random bounds to ignore, so with a max speed of 1.0f, with percentage of 50 (0.50f),
+     *         the speed will only be set to -/+1.0f to -/+0.5f, and never anywhere between -0.5f and 0.5f.
+     */
+    public final synchronized void setVelocitiesToRandomAmount(float maxVelocity,
+            float percentFromZeroToExtremeToNotSetTo) {
+        setXVelocity(maxVelocity - randomGen.nextFloat() * (maxVelocity * 2));
+        if (getXVelocity() > -(maxVelocity * percentFromZeroToExtremeToNotSetTo) &&
+                getXVelocity() < (maxVelocity * percentFromZeroToExtremeToNotSetTo)) {
+            // Always ensure the random value is on either extreme of the random range
+            // based on percentFromZeroToExtremeToNotSetTo
+            setXVelocity(getXVelocity() * 2);
+        }
+        setYVelocity(maxVelocity - randomGen.nextFloat() * (maxVelocity * 2));
+        if (getYVelocity() > -(maxVelocity * percentFromZeroToExtremeToNotSetTo) &&
+                getYVelocity() < (maxVelocity * percentFromZeroToExtremeToNotSetTo)) {
+            setYVelocity(getYVelocity() * 2);
+        }
+    }
+
+    /**
+     * @return The {@link SpacePartitioner} of this Sprite
+     */
+    public final synchronized SpacePartitioner getSpacePartitioner() {
+        return spacePartitioner;
+    }
+
+    /**
+     * Set a {@link SpacePartitioner} for the Sprite. A SpacePartitioner will allow child sprites to auto detect
+     * possible collisions via the {@link Sprite#potentialCollision(Sprite)} method.
+     */
+    public final synchronized void setSpacePartitioner(SpacePartitioner spacePartitioner) {
+        this.spacePartitioner = spacePartitioner;
     }
 
     private static class EndRootSprite extends Sprite {
-
-        public EndRootSprite(int width, int height) {
-            super(width, height);
-            // Width and height here should be zero, because this isn't suppose to be a real sprite.
-            // Having a width and height of zero will help in not accidentally computing collisions or any other related
-            // operations using width and height.
-            assert (width == 0);
-            assert (height == 0);
-        }
 
         @Override
         int getParentYDrawingCoordinateTopLeftInternalImpl() {
@@ -431,6 +594,16 @@ public class Sprite implements Iterable<Sprite> {
 
         @Override
         int getParentXDrawingCoordinateTopLeftInternalImpl() {
+            return 0;
+        }
+
+        @Override
+        int getParentOldYDrawingCoordinateTopLeftInternalImpl() {
+            return 0;
+        }
+
+        @Override
+        int getParentOldXDrawingCoordinateTopLeftInternalImpl() {
             return 0;
         }
     }

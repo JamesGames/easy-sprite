@@ -1,7 +1,9 @@
 Easy Sprite
 ===============
 
-Sprite library that provides classes that can represent moving pieces of animations that can help create video games or other graphical applications.
+Easy Sprite is a graphics and animation library that provides classes that can represent moving pieces of animations that can help create video games or other graphical applications.
+
+![](screenshot/exampleScreenshot.gif)
 
 ## Requirements
 
@@ -24,13 +26,7 @@ The source code isn't hosted on any maven repo, so in the meantime you'll have t
 To manually build the project, download Maven and change the current
 working directory to the directory containing pom.xml and run the
 command "mvn install".
-The default location for the Maven local repository is
-
-* "~/.m2" on Linux and OSX
-
-or
-
-* "Documents and Settings\{your-username}\.m2" on Windows
+The default location for the Maven local repository is a directory structure of `/.m2/repository/`, found in the user's home directory.
 
 ## Credits
 

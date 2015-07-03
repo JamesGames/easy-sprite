@@ -1,6 +1,6 @@
 package org.jamesgames.easysprite.gui.swing;
 
-import org.jamesgames.easysprite.Sprite;
+import org.jamesgames.easysprite.sprite.Sprite;
 import org.jamesgames.easysprite.updater.UpdateListener;
 import org.jamesgames.jamesjavautils.time.ActionsPerTimeFrameCounter;
 
@@ -11,7 +11,7 @@ import java.awt.event.ComponentEvent;
 import java.text.DecimalFormat;
 
 /**
- * SpritePanel is a JPanel that displays a {@link org.jamesgames.easysprite.Sprite}.
+ * SpritePanel is a JPanel that displays a {@link Sprite}.
  *
  * @author James Murphy
  */
@@ -38,7 +38,7 @@ public class SpritePanel extends JPanel implements UpdateListener {
     private final ActionsPerTimeFrameCounter framesPerSecondCounter;
 
     /**
-     * Holds the most recent known updates per second value from {@link org.jamesgames.easysprite.gui.swing.SpritePanel#newUpdatePerSecondCalculated(float)}
+     * Holds the most recent known updates per second value from {@link SpritePanel#newUpdatePerSecondCalculated(float)}
      */
     private float updatesPerSecond = 0;
 
@@ -67,7 +67,7 @@ public class SpritePanel extends JPanel implements UpdateListener {
      *
      * @see #isDisplayingTimeValues
      */
-    private DecimalFormat timeValueFormatter = new DecimalFormat();
+    private final DecimalFormat timeValueFormatter = new DecimalFormat();
 
     /**
      * Constructs a SpritePanel
@@ -85,9 +85,9 @@ public class SpritePanel extends JPanel implements UpdateListener {
         timeValueFormatter.setMaximumFractionDigits(3);
 
         if (resizeSpriteOnPanelResize) {
-            this.addComponentListener(new ComponentAdapter() {
+            addComponentListener(new ComponentAdapter() {
                 public void componentResized(ComponentEvent e) {
-                    spriteToDisplay.resize(SpritePanel.this.getWidth(), SpritePanel.this.getHeight());
+                    spriteToDisplay.resize(getWidth(), getHeight());
                 }
             });
         }
@@ -97,15 +97,15 @@ public class SpritePanel extends JPanel implements UpdateListener {
         return spriteToDisplay;
     }
 
-    public synchronized void setDrawingSpriteDebugGraphics(boolean drawingSpriteDebugGraphics) {
-        this.isDrawingSpriteDebugGraphics = drawingSpriteDebugGraphics;
-        if (this.isDrawingSpriteDebugGraphics) {
-            spriteToDisplay.setDrawingDebugGraphicsIncludingChildSprites(true);
-        }
-    }
-
     public synchronized boolean isDrawingSpriteDebugGraphics() {
         return isDrawingSpriteDebugGraphics;
+    }
+
+    public synchronized void setDrawingSpriteDebugGraphics(boolean drawingSpriteDebugGraphics) {
+        isDrawingSpriteDebugGraphics = drawingSpriteDebugGraphics;
+        if (isDrawingSpriteDebugGraphics) {
+            spriteToDisplay.setDrawingDebugGraphicsIncludingChildSprites(true);
+        }
     }
 
     public boolean isDisplayingTimeValues() {
@@ -113,11 +113,11 @@ public class SpritePanel extends JPanel implements UpdateListener {
     }
 
     public void setDisplayingTimeValues(boolean displayingTimeValues) {
-        this.isDisplayingTimeValues = displayingTimeValues;
+        isDisplayingTimeValues = displayingTimeValues;
     }
 
     public void toggleSetDisplayingTimeValues() {
-        this.isDisplayingTimeValues = !isDisplayingTimeValues;
+        isDisplayingTimeValues = !isDisplayingTimeValues;
     }
 
     public Color getTimeValueDisplayColor() {
