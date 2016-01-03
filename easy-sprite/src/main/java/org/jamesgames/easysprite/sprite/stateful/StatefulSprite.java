@@ -19,8 +19,12 @@ import java.util.function.Supplier;
  * ActiveStateSet to just contain {@link java.lang.Object}s, but that would introduce a lot of casting and instanceof
  * calls. Perhaps what is needed to keep minimal changes away from what already exists is to just use plain old int
  * based enums to represent different states.
- *
- * Required update, design more of StatefulSprite to be thread-safe.
+ * <p>
+ * Potential update, design more of StatefulSprite to be thread-safe. This right now, is pretty impossible because <E
+ * extends Enum<E>> can be mutable, and you can't enforce a user of this class to always provide a thread-safe version
+ * of <E extends Enum<E>>. StatefulSprite doesn't know what <E extends Enum<E>> will be, and that Enum could be
+ * available globally and modified anywhere in code like any Enum. Perhaps I should have picked another way to represent
+ * states.
  *
  * @author James Murphy
  */
@@ -28,7 +32,6 @@ public class StatefulSprite<E extends Enum<E>> extends Sprite {
     private final ActiveStateSet<E> activeStates = new ActiveStateSet<>();
     private final StatesToAnimationMap<E> activeStatesToAnimation;
     private final Animation currentAnimation;
-
 
     public StatefulSprite(Supplier<StatesToAnimationMap<E>> statesToAnimationMapSupplier) {
         this(statesToAnimationMapSupplier.get());

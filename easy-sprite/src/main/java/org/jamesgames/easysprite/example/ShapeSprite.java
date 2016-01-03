@@ -28,6 +28,8 @@ public class ShapeSprite extends StatefulSprite<ShapeSpriteStates> {
     private final ObservableElapsedTimeTimer timerToWaitBeforeChangingShape =
             new ObservableElapsedTimeTimer(timeToWaitBeforeChangingShape);
 
+    private static final StatesToAnimationMap<ShapeSpriteStates> stateToAnimationMap;
+
     /**
      * This default animation shouldn't appear according to the logic of our ShapeSprite (isCircle or isSquare state is
      * always active)
@@ -43,8 +45,6 @@ public class ShapeSprite extends StatefulSprite<ShapeSpriteStates> {
                             g.drawString("default animation", 2, 10);
                         }
                     }).setLooping(false).createAnimation();
-    private static final StatesToAnimationMap<ShapeSpriteStates> stateToAnimationMap =
-            new StatesToAnimationMap<>(defaultAnimationDescription);
 
     private static final AnimationDescription circleAnimationDescription =
             new AnimationDescription.AnimationDescriptionBuilder().setDrawableFramesToUse(
@@ -130,8 +130,12 @@ public class ShapeSprite extends StatefulSprite<ShapeSpriteStates> {
             ).setLooping(true).setFrameIndexToLoopBackTo(1).createAnimation();
 
     static {
-        stateToAnimationMap.addActiveStateComboForAnimation(circleAnimationDescription, ShapeSpriteStates.isACircle);
-        stateToAnimationMap.addActiveStateComboForAnimation(squareAnimationDescription, ShapeSpriteStates.isASquare);
+        stateToAnimationMap =
+                new StatesToAnimationMap.StatesToAnimationMapBuilder()
+                        .setDefaultAnimationDescription(defaultAnimationDescription)
+                        .addActiveStateComboForAnimation(circleAnimationDescription, ShapeSpriteStates.isACircle)
+                        .addActiveStateComboForAnimation(squareAnimationDescription, ShapeSpriteStates.isASquare)
+                        .createStatesToAnimationMap();
     }
 
     public ShapeSprite() {

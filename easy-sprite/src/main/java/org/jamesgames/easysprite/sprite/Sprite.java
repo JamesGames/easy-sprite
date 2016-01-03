@@ -70,7 +70,7 @@ public class Sprite implements Iterable<Sprite> {
         return Math.round(oldXCoordinateTopLeft);
     }
 
-    int getParentOldXDrawingCoordinateTopLeftInternalImpl() {
+    synchronized int getParentOldXDrawingCoordinateTopLeftInternalImpl() {
         return parentSprite.getOldXDrawingCoordinateTopLeft();
     }
 
@@ -86,7 +86,7 @@ public class Sprite implements Iterable<Sprite> {
         return Math.round(oldYCoordinateTopLeft);
     }
 
-    int getParentOldYDrawingCoordinateTopLeftInternalImpl() {
+    synchronized int getParentOldYDrawingCoordinateTopLeftInternalImpl() {
         return parentSprite.getOldYDrawingCoordinateTopLeft();
     }
 
@@ -122,7 +122,7 @@ public class Sprite implements Iterable<Sprite> {
      * Retrieves the parent Sprite's x drawing coordinate. Package protected, it's to be overridden in order to stop
      * recursion by having an overridden method return 0 instead of referencing another object.
      */
-    int getParentXDrawingCoordinateTopLeftInternalImpl() {
+    synchronized int getParentXDrawingCoordinateTopLeftInternalImpl() {
         return parentSprite.getXDrawingCoordinateTopLeft();
     }
 
@@ -158,7 +158,7 @@ public class Sprite implements Iterable<Sprite> {
      * Retrieves the parent Sprite's y drawing coordinate. Package protected, it's designed to be overridden in order to
      * stop recursion by having an overridden method return 0 instead of referencing another object..
      */
-    int getParentYDrawingCoordinateTopLeftInternalImpl() {
+    synchronized int getParentYDrawingCoordinateTopLeftInternalImpl() {
         return parentSprite.getYDrawingCoordinateTopLeft();
     }
 
@@ -254,6 +254,8 @@ public class Sprite implements Iterable<Sprite> {
             throw new IllegalArgumentException("Child sprite already exists in this parent sprite");
         }
         childSprites.add(sprite);
+        // Set draw debug flag that this parent sprite has active
+        sprite.setDrawingDebugGraphicsIncludingChildSprites(drawingDebugGraphics);
         // Also add to the partitioner
         spacePartitioner.addSprite(sprite);
         sprite.setParentSprite(this);
@@ -456,16 +458,6 @@ public class Sprite implements Iterable<Sprite> {
      */
     public final synchronized void setDrawingDebugGraphics(boolean drawingDebugGraphics) {
         this.drawingDebugGraphics = drawingDebugGraphics;
-        setDrawingDebugGraphicsToCachedSprites(drawingDebugGraphics);
-    }
-
-    /**
-     * Method can be overridden by subclasses for subclasses to toggle the drawing debug graphic state of any Sprites
-     * that are not child Sprites but are still potential child Sprites which that may be swapping in and out often. For
-     * example, a Sprite may have cached some other Sprites that will make up the Sprite in two different states, but
-     * only a subset of those Sprites are currently child Sprites,
-     */
-    protected synchronized void setDrawingDebugGraphicsToCachedSprites(boolean drawingDebugGraphics) {
     }
 
     /**
@@ -487,6 +479,10 @@ public class Sprite implements Iterable<Sprite> {
      */
     public final synchronized void toggleDrawingDebugGraphicsIncludingChildSprites() {
         setDrawingDebugGraphicsIncludingChildSprites(!drawingDebugGraphics);
+    }
+
+    public final synchronized boolean isDrawingDebugGraphics() {
+        return drawingDebugGraphics;
     }
 
     /**
@@ -585,25 +581,25 @@ public class Sprite implements Iterable<Sprite> {
         this.spacePartitioner = spacePartitioner;
     }
 
-    private static class EndRootSprite extends Sprite {
+    private static final class EndRootSprite extends Sprite {
 
         @Override
-        int getParentYDrawingCoordinateTopLeftInternalImpl() {
+        synchronized int getParentYDrawingCoordinateTopLeftInternalImpl() {
             return 0;
         }
 
         @Override
-        int getParentXDrawingCoordinateTopLeftInternalImpl() {
+        synchronized int getParentXDrawingCoordinateTopLeftInternalImpl() {
             return 0;
         }
 
         @Override
-        int getParentOldYDrawingCoordinateTopLeftInternalImpl() {
+        synchronized int getParentOldYDrawingCoordinateTopLeftInternalImpl() {
             return 0;
         }
 
         @Override
-        int getParentOldXDrawingCoordinateTopLeftInternalImpl() {
+        synchronized int getParentOldXDrawingCoordinateTopLeftInternalImpl() {
             return 0;
         }
     }

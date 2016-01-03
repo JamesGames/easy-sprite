@@ -13,11 +13,10 @@ public class SimpleShapeCollisionDetection {
 
     /**
      * Determines if there is a collision between two rectangles and if so from what general direction. Direction is
-     * described in what part of rectangle Two that Rectangle One "hit", so if rectangle One is intersecting Rectangle
-     * Two and in general rectangle One appears to be more above rectangle Two then it is to the side of rectangle two,
-     * then from_bottom would be returned because the collision description describes where the collision occurred on
-     * the rectangle one. If the collision came equally on a corner of two sprites, then this method favors side
-     * collisions and will return either from_left or from_right.
+     * described in what part of rectangle One that Rectangle Two "hit", so if rectangle One is intersecting Rectangle
+     * Two and rectangle One appears to be more above rectangle Two then it is to the side of rectangle two, then
+     * from_bottom would be returned. If the collision came equally on a corner of two sprites, then this method favors
+     * side collisions and will return either from_left or from_right.
      *
      * @return If there is a collision and if so the direction of the collision
      */
@@ -33,29 +32,36 @@ public class SimpleShapeCollisionDetection {
                 xTwo < xOne + widthOne &&
                 yOne < yTwo + heightTwo &&
                 yTwo < yOne + heightOne) {
-            boolean rectOneIsLeftOfRectTwo = xOne < xTwo;
-            int numberOfUnitsSharedInXAxis = rectOneIsLeftOfRectTwo ? xOne - xTwo : xTwo - xOne;
-            // Need to do this, in case you have say a rectangle intersecting the top of another, where this first
-            // rectangle's far right index and far left index are both past to and the right and left of the second
-            // rectangle's extremes
-            numberOfUnitsSharedInXAxis = Math.min(Math.min(widthOne, widthTwo), numberOfUnitsSharedInXAxis);
 
-            boolean rectOneIsAboveRectTwo = yOne < yTwo;
-            int numberOfUnitsSharedInYAxis = rectOneIsAboveRectTwo ? yOne - yTwo : yTwo - yOne;
-            numberOfUnitsSharedInYAxis = Math.min(Math.min(heightOne, heightTwo), numberOfUnitsSharedInYAxis);
+            int numberOfUnitsSharedInXAxis = calculateUnitsSharedAlongAxis(xOne, widthOne, xTwo, widthTwo);
+            int numberOfUnitsSharedInYAxis = calculateUnitsSharedAlongAxis(yOne, heightOne, yTwo, heightTwo);
 
             if (numberOfUnitsSharedInXAxis > numberOfUnitsSharedInYAxis) {
                 // Intersection of two came from more of a y direction
-                return rectOneIsAboveRectTwo ? SimpleCollisionDirection.from_bottom :
+                return yOne < yTwo ? SimpleCollisionDirection.from_bottom :
                         SimpleCollisionDirection.from_top;
             } else {
                 // Intersection of two came from more of a x direction
-                return rectOneIsLeftOfRectTwo ? SimpleCollisionDirection.from_right :
+                return xOne < xTwo ? SimpleCollisionDirection.from_right :
                         SimpleCollisionDirection.from_left;
             }
         }
 
         return SimpleCollisionDirection.no_collision;
+    }
+
+    private static int calculateUnitsSharedAlongAxis(int axisCoordOne, int axisLengthOne, int axisCoordTwo,
+            int axisLengthTwo) {
+        boolean isARectangleFullyInTheOtherAlongXAxis =
+                (axisCoordOne < axisCoordTwo && axisCoordOne + axisLengthOne > axisCoordTwo + axisLengthTwo) ||
+                        (axisCoordTwo < axisCoordOne && axisCoordTwo + axisLengthTwo > axisCoordOne + axisLengthOne);
+        if (isARectangleFullyInTheOtherAlongXAxis) {
+            return Math.min(axisLengthOne, axisLengthTwo);
+        } else {
+            boolean rectOneIsLeftOfRectTwo = axisCoordOne < axisCoordTwo;
+            return rectOneIsLeftOfRectTwo ? (axisCoordOne + axisLengthOne) - axisCoordTwo :
+                    (axisCoordTwo + axisLengthTwo) - axisCoordOne;
+        }
     }
 
     public static void moveSpritesOffOfCollidingSprite(Sprite sprite,

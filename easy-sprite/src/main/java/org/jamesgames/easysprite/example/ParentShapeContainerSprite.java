@@ -1,5 +1,6 @@
 package org.jamesgames.easysprite.example;
 
+import org.jamesgames.easysprite.input.GameInput;
 import org.jamesgames.easysprite.physics.partitioning.SimpleSpacePartitioner;
 import org.jamesgames.easysprite.sprite.Sprite;
 
@@ -13,11 +14,21 @@ import java.awt.*;
  */
 public class ParentShapeContainerSprite extends Sprite {
 
-    public ParentShapeContainerSprite(int x, int y) {
+    public ParentShapeContainerSprite(int x, int y, GameInput left, GameInput right, GameInput up, GameInput down) {
         super(x, y);
-        // Allows for child sprites to auto detect collisions via overrideable method potentialCollision
         setSpacePartitioner(new SimpleSpacePartitioner());
+        addChildShapeSprites();
+        addChildPlayerSprite(left, right, up, down);
+    }
 
+    private void addChildPlayerSprite(GameInput left, GameInput right, GameInput up, GameInput down) {
+        PlayerSprite player = new PlayerSprite(30, 30, left, right, up, down);
+        player.setXCoordinateTopLeft(400);
+        player.setYCoordinateTopLeft(360);
+        addChildSprite(player);
+    }
+
+    private void addChildShapeSprites() {
         int margin = 50;
         int shapesToCreate = 4;
         int shapesPerRow = (int) Math.round(Math.ceil(Math.sqrt(shapesToCreate)));

@@ -12,30 +12,21 @@ import java.util.List;
  * order that this class will determine what Animation should be chosen for the set of active states (from
  * getAnimationDescription()). If no declaration of state combos are active, then the default animation description is
  * returned by getAnimationDescription().
- *
- * Potential update, design this class to be used in an immutable way.
+ * <p>
+ * I want to make this immutable, but {@link StateCombosToAnimation}s contain a List of <E extends Enum<E>> which can be
+ * mutable.
  *
  * @author James Murphy
  */
+
 public class StatesToAnimationMap<E extends Enum<E>> {
     private final AnimationDescription defaultAnimationDescription;
     private final List<StateCombosToAnimation> stateCombosToAnimation = new ArrayList<>();
 
-    public StatesToAnimationMap(AnimationDescription defaultAnimationDescription) {
+    public StatesToAnimationMap(AnimationDescription defaultAnimationDescription,
+            List<StateCombosToAnimation> stateCombosToAnimation) {
         this.defaultAnimationDescription = defaultAnimationDescription;
-    }
-
-    /**
-     * Add a set of states that should be active for the passed Animation to be selected. The order of multiple calls to
-     * this method determines the order that this class will determine what Animation should be chosen for the set of
-     * active states.
-     */
-    public void addActiveStateComboForAnimation(AnimationDescription animationDescriptionForCombo,
-            E activeStateNeededForAnimation,
-            E... restOfPotentialCombo) {
-        stateCombosToAnimation
-                .add(new StateCombosToAnimation(animationDescriptionForCombo, activeStateNeededForAnimation,
-                        restOfPotentialCombo));
+        this.stateCombosToAnimation.addAll(stateCombosToAnimation);
     }
 
     public AnimationDescription getAnimationDescription(ActiveStateSet<E> activeStates) {
@@ -43,7 +34,37 @@ public class StatesToAnimationMap<E extends Enum<E>> {
                 .map(StateCombosToAnimation::getMappedAnimationDescription).orElse(defaultAnimationDescription);
     }
 
-    private class StateCombosToAnimation {
+    public static class StatesToAnimationMapBuilder<E extends Enum<E>> {
+        private AnimationDescription defaultAnimationDescription;
+        private final List<StateCombosToAnimation> stateCombosToAnimation = new ArrayList<>();
+
+        public StatesToAnimationMapBuilder setDefaultAnimationDescription(
+                AnimationDescription defaultAnimationDescription) {
+            this.defaultAnimationDescription = defaultAnimationDescription;
+            return this;
+        }
+
+        public StatesToAnimationMap createStatesToAnimationMap() {
+            return new StatesToAnimationMap(defaultAnimationDescription, stateCombosToAnimation);
+        }
+
+        /**
+         * Add a set of states that should be active for the passed Animation to be selected. The order of multiple
+         * calls to this method determines the order that this class will determine what Animation should be chosen for
+         * the set of active states.
+         */
+        public StatesToAnimationMapBuilder addActiveStateComboForAnimation(
+                AnimationDescription animationDescriptionForCombo,
+                E activeStateNeededForAnimation,
+                E... restOfPotentialCombo) {
+            stateCombosToAnimation
+                    .add(new StateCombosToAnimation(animationDescriptionForCombo, activeStateNeededForAnimation,
+                            restOfPotentialCombo));
+            return this;
+        }
+    }
+
+    private static class StateCombosToAnimation<E extends Enum<E>> {
         private final List<E> activeStateCombosForAnimation = new ArrayList<>();
         private final AnimationDescription mappedAnimationDescription;
 

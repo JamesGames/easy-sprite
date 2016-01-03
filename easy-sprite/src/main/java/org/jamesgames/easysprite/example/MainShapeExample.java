@@ -1,12 +1,18 @@
 package org.jamesgames.easysprite.example;
 
+import org.jamesgames.easysprite.gui.swing.GameInputPanel;
 import org.jamesgames.easysprite.gui.swing.SpritePanel;
+import org.jamesgames.easysprite.input.GameInput;
 import org.jamesgames.easysprite.sprite.Sprite;
 import org.jamesgames.easysprite.updater.SpriteUpdater;
 import org.jamesgames.jamesjavautils.gui.swing.JFrameSizedAfterInsets;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * Small example program showing off features of EasySprite. This example application shows off some of the graphical
@@ -35,8 +41,24 @@ public class MainShapeExample {
                     "(github.com/jamesgames/easy-sprite)");
             frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-            Sprite board = new ParentShapeContainerSprite(width, height);
+            List<GameInput> gameInputs = new ArrayList<>();
+            GameInput moveRight = new GameInput(KeyEvent.VK_RIGHT, "Move Right", "Moves the player sprite right");
+            GameInput moveLeft = new GameInput(KeyEvent.VK_LEFT, "Move Left", "Moves the player sprite left");
+            GameInput moveUp = new GameInput(KeyEvent.VK_UP, "Move Up", "Moves the player sprite up");
+            GameInput moveDown = new GameInput(KeyEvent.VK_DOWN, "Move Down", "Moves the player sprite down");
+            gameInputs.add(moveRight);
+            gameInputs.add(moveLeft);
+            gameInputs.add(moveUp);
+            gameInputs.add(moveDown);
+
+            GameInputPanel gameInputPanel = new GameInputPanel(gameInputs);
+            gameInputPanel.setOpaque(false);
+
+            Sprite board = new ParentShapeContainerSprite(width, height, moveLeft, moveRight, moveUp, moveDown);
+
             SpritePanel boardPanel = new SpritePanel(board, true);
+            boardPanel.bindGameInputs(gameInputs);
+            boardPanel.add(gameInputPanel);
             boardPanel.setDisplayingTimeValues(true);
             boardPanel.setDrawingSpriteDebugGraphics(true);
             boardPanel.setTimeValueDisplayColor(Color.BLACK);

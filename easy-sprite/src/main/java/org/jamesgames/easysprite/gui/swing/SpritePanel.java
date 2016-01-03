@@ -1,5 +1,6 @@
 package org.jamesgames.easysprite.gui.swing;
 
+import org.jamesgames.easysprite.input.GameInput;
 import org.jamesgames.easysprite.sprite.Sprite;
 import org.jamesgames.easysprite.updater.UpdateListener;
 import org.jamesgames.jamesjavautils.time.ActionsPerTimeFrameCounter;
@@ -9,6 +10,7 @@ import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.text.DecimalFormat;
+import java.util.List;
 
 /**
  * SpritePanel is a JPanel that displays a {@link Sprite}.
@@ -41,11 +43,6 @@ public class SpritePanel extends JPanel implements UpdateListener {
      * Holds the most recent known updates per second value from {@link SpritePanel#newUpdatePerSecondCalculated(float)}
      */
     private float updatesPerSecond = 0;
-
-    /**
-     * If true, the Sprite's debug graphics and all children sprite's debug graphics will be drawn
-     */
-    private boolean isDrawingSpriteDebugGraphics = false;
 
     /**
      * If true, the panel displays the frames per second value
@@ -93,19 +90,20 @@ public class SpritePanel extends JPanel implements UpdateListener {
         }
     }
 
-    protected synchronized Sprite getSpriteToDisplay() {
-        return spriteToDisplay;
+    public void bindGameInputs(List<GameInput> gameInputsToBind) {
+        gameInputsToBind.forEach(input -> input.setComponentToBindInputTo(this));
     }
 
-    public synchronized boolean isDrawingSpriteDebugGraphics() {
-        return isDrawingSpriteDebugGraphics;
+    public boolean isDrawingSpriteDebugGraphics() {
+        return spriteToDisplay.isDrawingDebugGraphics();
     }
 
-    public synchronized void setDrawingSpriteDebugGraphics(boolean drawingSpriteDebugGraphics) {
-        isDrawingSpriteDebugGraphics = drawingSpriteDebugGraphics;
-        if (isDrawingSpriteDebugGraphics) {
-            spriteToDisplay.setDrawingDebugGraphicsIncludingChildSprites(true);
-        }
+    public void setDrawingSpriteDebugGraphics(boolean drawingSpriteDebugGraphics) {
+        spriteToDisplay.setDrawingDebugGraphicsIncludingChildSprites(drawingSpriteDebugGraphics);
+    }
+
+    public void toggleDrawingSpriteDebugGraphics() {
+        spriteToDisplay.toggleDrawingDebugGraphicsIncludingChildSprites();
     }
 
     public boolean isDisplayingTimeValues() {
